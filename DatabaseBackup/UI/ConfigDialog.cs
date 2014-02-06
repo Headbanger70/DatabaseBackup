@@ -54,6 +54,8 @@ namespace DatabaseBackup.UI
 
             txtNumBackup.Value = Properties.Settings.Default.BackupCount;
             txtDateFormat.Text = Properties.Settings.Default.DateFormat;
+            radbtnBHistSimple.Checked = Properties.Settings.Default.SimpleBackupHistory;
+            radbtnBHistAdvanced.Checked = !Properties.Settings.Default.SimpleBackupHistory;
 
             chkBackupClosed.Checked = Properties.Settings.Default.BackupOnFileClosed;
             chkBackupSaved.Checked = Properties.Settings.Default.BackupOnFileSaved;
@@ -200,6 +202,8 @@ namespace DatabaseBackup.UI
                 Properties.Settings.Default.BackupFolders.Add(it);
 
             Properties.Settings.Default.DateFormat = txtDateFormat.Text;
+            Properties.Settings.Default.SimpleBackupHistory = radbtnBHistSimple.Checked;
+
             Properties.Settings.Default.BackupOnFileClosed = chkBackupClosed.Checked;
             Properties.Settings.Default.BackupOnFileSaved = chkBackupSaved.Checked;
             Properties.Settings.Default.AutoBackupModifiedOnly = chkBackupOnModified.Checked;

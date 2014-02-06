@@ -173,6 +173,229 @@ namespace DatabaseBackup
         }
 
         /// <summary>
+        /// Rename a "*_log" file into a ".log" file for backward compatibility
+        /// </summary>
+        private void RenameLogFile(string SourceFilename, string BackupFolder) {
+            string oldLogFile = Path.Combine(BackupFolder, SourceFilename + "_log");
+            string newLogFile = Path.Combine(BackupFolder, SourceFilename + ".log");
+
+            if (File.Exists(oldLogFile)) {
+                File.Move(oldLogFile, newLogFile);
+            }
+        }
+        
+        /// <summary>
+        /// Perform the standard simple backup history using a log file
+        /// </summary>
+        private void SimpleBackupHistory(string SourceFileName, string BackupFile, string BackupFolder) {
+
+            // read log file
+            var logName = SourceFileName + ".log";  // not "_log" anymore, because then log files and
+                                                    // regular backup files are harder to differentiate
+            var BackupLogFile = Path.Combine(BackupFolder, logName);
+            var LogFile = new string[] { };
+            if (File.Exists(BackupLogFile))
+                LogFile = File.ReadAllLines(BackupLogFile);
+
+            // record the newest backup at the top of the file
+            var newLog = new StreamWriter(BackupLogFile, false);
+            newLog.WriteLine(BackupFile);
+
+            // now go through the set of older backups and remove any that
+            // take us over our limit
+            for (uint i = 0, backupCount = 1; i < LogFile.Length; ++i, ++backupCount) {
+                var oldBackup = LogFile[i];
+                if (backupCount >= Properties.Settings.Default.BackupCount) {
+                    // this backup is one more than we need, so get rid of it
+                    if (File.Exists(oldBackup))
+                        File.Delete(oldBackup);
+                } else {
+                    // backup is valid, so keep and record it
+                    newLog.WriteLine(oldBackup);
+                }
+            }
+
+            newLog.Close();
+            newLog.Dispose();
+            newLog = null;
+        }
+
+        /// <summary>
+        /// Compare two files relating to their creation date/time
+        /// </summary>
+        public static int CompareFilesByCreationDate(string f1, string f2) {
+            if (File.Exists(f1) && File.Exists(f2)) {
+                return DateTime.Compare((new FileInfo(f1)).CreationTime, (new FileInfo(f2)).CreationTime);
+            } else return 0; // Or maybe quit with a message box and throw an exception
+        }
+
+        /// <summary>
+        /// The struct <c>DirTypes</c> und the array <c>DirNames</c> belong together and are used in the
+        /// following function <c>AdvancedBackupHistory</c> to describe the different subdirectories
+        /// </summary>
+        public struct DirTypes {
+            public const int Std = 0;
+            public const int Today = 1;
+            public const int Yesterday = 2;
+            public const int OneWeek = 3;
+            public const int FourWeeks = 4;
+            public const int TwelveMonths = 5;
+            public const int TenYears = 6;
+        };
+
+        public readonly static string[] DirNames = {
+                                            ".",                // Std
+                                            "1_Today",          // Today
+                                            "2_Yesterday",      // Yesterday
+                                            "3_One_Week",       // OneWeek
+                                            "4_Four_Weeks",     // FourWeeks
+                                            "5_Twelve_Months",  // TwelveMonths
+                                            "6_Ten_Years",      // TenYears
+                                            ""};                // only to avoid unnecessary special cases
+
+        /// <summary>
+        /// Perform an advanced backup history (without log file) using an additional set of subdirectories
+        /// containing prior versions of the backup file
+        /// </summary>
+        private void AdvancedBackupHistory(string SourceFileName, string BackupFile, string BackupFolder) {
+            DateTime bound;
+
+            // for each subdirectory delete extra files or move them to the next
+            // corresponding subfolder
+            for (int dir = DirTypes.Std; dir <= DirTypes.TenYears; dir++) {
+                string sourceDir = Path.Combine(BackupFolder, DirNames[dir]);
+
+                if (Directory.Exists(sourceDir)) {
+                    string destDir = Path.Combine(BackupFolder, DirNames[dir + 1]);
+
+                    // get only files with a matching name
+                    string[] files = Directory.GetFiles(sourceDir, SourceFileName + "_*");
+
+                    if (files.Length > 0) {
+
+                        // 1st round: (re)move files not matching the date range
+                        if (dir >= DirTypes.Today) {
+
+                            // set the corresponding date bound
+                            bound = DateTime.Today;
+                            switch (dir) {
+                                case DirTypes.Today:
+                                    break;
+                                case DirTypes.Yesterday:
+                                    bound = bound.AddDays(-1);
+                                    break;
+                                case DirTypes.OneWeek:
+                                    bound = bound.AddDays(-7);
+                                    break;
+                                case DirTypes.FourWeeks:
+                                    bound = bound.AddDays(-28);
+                                    break;
+                                case DirTypes.TwelveMonths:
+                                    bound = new DateTime(bound.Year, bound.Month, 1);
+                                    break;
+                                case DirTypes.TenYears:
+                                    bound = new DateTime(bound.Year - 10, 1, 1);
+                                    break;
+                            }
+
+                            // Check each file if it is older than the corresponding bound
+                            foreach (string file in files) {
+                                if (File.Exists(file) &&
+                                    DateTime.Compare((new FileInfo(file)).CreationTime, bound) < 0) {
+                                    if (dir == DirTypes.TenYears) { // delete the files older than ten years
+                                        File.Delete(file);
+                                    } else { // move the other file to the next directory
+                                        Directory.CreateDirectory(destDir);
+                                        File.Move(file, Path.Combine(destDir, Path.GetFileName(file)));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 2nd round: (re)move files if there are too many
+
+                    // get only files with a matching name
+                    files = Directory.GetFiles(sourceDir, SourceFileName + "_*");
+
+                    if (files.Length > 0) {
+                        // sort them by date/time (ascending, i.e. from the oldest to the newest)
+                        Array.Sort(files, CompareFilesByCreationDate);
+
+                        // For ".", "1_Today" and "2_Yesterday" the maximum number of files is
+                        // limited by the preferences (HistoQty)
+                        if (dir <= DirTypes.Yesterday &&
+                            files.Length > Properties.Settings.Default.BackupCount) {
+
+                            // Delete/Move from the beginning:
+                            //   ".": Delete the oldest files
+                            //   "1_Today" and "2_Yesterday":
+                            //        Keep the old files and delete/move the youngest
+                            if (dir != DirTypes.Std) Array.Reverse(files);
+
+                            // Delete/Move as many files such that the maximum number of files (HistoQty) remains
+                            for (int i = 0; i < files.Length - Properties.Settings.Default.BackupCount; i++) {
+                                if (File.Exists(files[i])) {
+
+                                    // Check the files in the "Today" directory that should be removed, whether they
+                                    // are old enough to belong into the "Yesterday" directory. If so, move them.
+                                    // Otherwise, delete them.
+                                    // The files in the standard and "Yesterday" directory can be moved in all cases.
+                                    if ((dir != DirTypes.Today) ||
+                                        (DateTime.Compare((new FileInfo(files[i])).CreationTime, DateTime.Today) < 0)) {
+                                        Directory.CreateDirectory(destDir);
+                                        File.Move(files[i],
+                                            Path.Combine(destDir, Path.GetFileName(files[i])));
+                                    } else {
+                                        // if the file is too young, delete it
+                                        File.Delete(files[i]);
+                                    }
+                                }
+                            }
+                        } else if (dir >= DirTypes.OneWeek) {
+                            // For the remaining directories we use a heuristic method, e.g.:
+                            // "3_One_Week": At most one file per day
+                            // "4_Four_Weeks": At most one file per 7 days
+                            // "5_Twelve_Month": At most one file per month
+                            // "6_Ten_Years": At most one file per year
+
+                            bool first = true;
+                            bound = DateTime.Today; // this is just for compile reasons...
+                            foreach (string file in files) {
+                                if (File.Exists(file)) {
+                                    if (!first) {
+                                        if (DateTime.Compare((new FileInfo(file)).CreationTime, bound) < 0) {
+                                            File.Delete(file);
+                                            continue;
+                                        }
+                                    } else {
+                                        first = false;
+                                    }
+                                    bound = (new FileInfo(file)).CreationTime;
+
+                                    switch (dir) {
+                                        case DirTypes.OneWeek:
+                                            bound = new DateTime(bound.Year, bound.Month, bound.Day).AddDays(1);
+                                            break;
+                                        case DirTypes.FourWeeks:
+                                            bound = new DateTime(bound.Year, bound.Month, bound.Day).AddDays(7);
+                                            break;
+                                        case DirTypes.TwelveMonths:
+                                            bound = new DateTime(bound.Year, bound.Month, 1).AddMonths(1);
+                                            break;
+                                        case DirTypes.TenYears:
+                                            bound = new DateTime(bound.Year + 1, 1, 1);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Do the actual database backup to the configured directories.
         /// </summary>
         private BackupError BackupDB()
@@ -234,6 +457,9 @@ namespace DatabaseBackup
 
                 backupPerformed = true;
 
+                // For backward compatibility rename a potential old log file (with "_") into a new one (with ".")
+                RenameLogFile(SourceFileName, folder);
+
                 // create backup file
                 var backupName = SourceFileName + "_" +
                     DateTime.Now.ToString(Properties.Settings.Default.DateFormat) + ".kdbx";
@@ -250,38 +476,13 @@ namespace DatabaseBackup
                 if (backupExists)
                     continue;
 
-                // read log file
-                var logName = SourceFileName + "_log";
-                var BackupLogFile = Path.Combine(folder, logName);
-                var LogFile = new string[] { };
-                if (File.Exists(BackupLogFile))
-                    LogFile = File.ReadAllLines(BackupLogFile);
-
-                // record the newest backup at the top of the file
-                var newLog = new StreamWriter(BackupLogFile, false);
-                newLog.WriteLine(BackupFile);
-
-                // now go through the set of older backups and remove any that
-                // take us over our limit
-                for (uint i = 0, backupCount = 1; i < LogFile.Length; ++i, ++backupCount)
-                {
-                    var oldBackup = LogFile[i];
-                    if (backupCount >= Properties.Settings.Default.BackupCount)
-                    {
-                        // this backup is one more than we need, so get rid of it
-                        if (File.Exists(oldBackup))
-                            File.Delete(oldBackup);
-                    }
-                    else
-                    {
-                        // backup is valid, so keep and record it
-                        newLog.WriteLine(oldBackup);
-                    }
+                if (Properties.Settings.Default.SimpleBackupHistory) {
+                    // Simple backup history (flat with log file)
+                    SimpleBackupHistory(SourceFileName, BackupFile, folder);
+                } else {
+                    // Advanced backup history (with subdirectories, without log file)
+                    AdvancedBackupHistory(SourceFileName, BackupFile, folder);
                 }
-
-                newLog.Close();
-                newLog.Dispose();
-                newLog = null;
             }
 
             // delete temp remote file
