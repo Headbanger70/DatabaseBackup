@@ -129,5 +129,41 @@ namespace DatabaseBackup.Properties {
                 this["SimpleBackupHistory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DBSepUseOnlyOneDir {
+            get {
+                return ((bool)(this["DBSepUseOnlyOneDir"]));
+            }
+            set {
+                this["DBSepUseOnlyOneDir"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoDelSubDirs {
+            get {
+                return ((bool)(this["AutoDelSubDirs"]));
+            }
+            set {
+                this["AutoDelSubDirs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AlwaysFillSubDirs {
+            get {
+                return ((bool)(this["AlwaysFillSubDirs"]));
+            }
+            set {
+                this["AlwaysFillSubDirs"] = value;
+            }
+        }
     }
 }

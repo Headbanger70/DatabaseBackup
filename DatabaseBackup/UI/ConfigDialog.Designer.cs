@@ -48,21 +48,27 @@
             this.tabContainer = new System.Windows.Forms.TabControl();
             this.tabDirectories = new System.Windows.Forms.TabPage();
             this.tabGeneral = new System.Windows.Forms.TabPage();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.radbtnDBSepSubDirs = new System.Windows.Forms.RadioButton();
+            this.radbtnDBSepFlat = new System.Windows.Forms.RadioButton();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radbtnBHistSimple = new System.Windows.Forms.RadioButton();
+            this.radbtnBHistAdvanced = new System.Windows.Forms.RadioButton();
             this.tabTriggers = new System.Windows.Forms.TabPage();
             this.chkOverwriteBackup = new System.Windows.Forms.CheckBox();
             this.chkBackupOnModified = new System.Windows.Forms.CheckBox();
             this.chkBackupClosed = new System.Windows.Forms.CheckBox();
             this.chkBackupSaved = new System.Windows.Forms.CheckBox();
-            this.radbtnBHistSimple = new System.Windows.Forms.RadioButton();
-            this.radbtnBHistAdvanced = new System.Windows.Forms.RadioButton();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkAutoDelSubDirs = new System.Windows.Forms.CheckBox();
+            this.chkAlwaysFillSubDirs = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.txtNumBackup)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBannerImage)).BeginInit();
             this.tabContainer.SuspendLayout();
             this.tabDirectories.SuspendLayout();
             this.tabGeneral.SuspendLayout();
-            this.tabTriggers.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.tabTriggers.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnBrowse
@@ -263,6 +269,7 @@
             // 
             // tabGeneral
             // 
+            this.tabGeneral.Controls.Add(this.groupBox2);
             this.tabGeneral.Controls.Add(this.groupBox1);
             this.tabGeneral.Controls.Add(this.label4);
             this.tabGeneral.Controls.Add(this.btnHelpDateFormat);
@@ -276,6 +283,75 @@
             this.tabGeneral.TabIndex = 1;
             this.tabGeneral.Text = "General";
             this.tabGeneral.UseVisualStyleBackColor = true;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.radbtnDBSepSubDirs);
+            this.groupBox2.Controls.Add(this.radbtnDBSepFlat);
+            this.groupBox2.Location = new System.Drawing.Point(9, 68);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(499, 71);
+            this.groupBox2.TabIndex = 16;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Database separation";
+            // 
+            // radbtnDBSepSubDirs
+            // 
+            this.radbtnDBSepSubDirs.AutoSize = true;
+            this.radbtnDBSepSubDirs.Location = new System.Drawing.Point(7, 43);
+            this.radbtnDBSepSubDirs.Name = "radbtnDBSepSubDirs";
+            this.radbtnDBSepSubDirs.Size = new System.Drawing.Size(222, 17);
+            this.radbtnDBSepSubDirs.TabIndex = 1;
+            this.radbtnDBSepSubDirs.Text = "Use subdirectories to separate Databases";
+            this.radbtnDBSepSubDirs.UseVisualStyleBackColor = true;
+            // 
+            // radbtnDBSepFlat
+            // 
+            this.radbtnDBSepFlat.AutoSize = true;
+            this.radbtnDBSepFlat.Checked = true;
+            this.radbtnDBSepFlat.Location = new System.Drawing.Point(6, 19);
+            this.radbtnDBSepFlat.Name = "radbtnDBSepFlat";
+            this.radbtnDBSepFlat.Size = new System.Drawing.Size(192, 17);
+            this.radbtnDBSepFlat.TabIndex = 0;
+            this.radbtnDBSepFlat.TabStop = true;
+            this.radbtnDBSepFlat.Text = "Store all Databases in one directory";
+            this.radbtnDBSepFlat.UseVisualStyleBackColor = true;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.chkAlwaysFillSubDirs);
+            this.groupBox1.Controls.Add(this.chkAutoDelSubDirs);
+            this.groupBox1.Controls.Add(this.radbtnBHistSimple);
+            this.groupBox1.Controls.Add(this.radbtnBHistAdvanced);
+            this.groupBox1.Location = new System.Drawing.Point(9, 154);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(499, 71);
+            this.groupBox1.TabIndex = 15;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Type of Backup History";
+            // 
+            // radbtnBHistSimple
+            // 
+            this.radbtnBHistSimple.AutoSize = true;
+            this.radbtnBHistSimple.Checked = true;
+            this.radbtnBHistSimple.Location = new System.Drawing.Point(6, 19);
+            this.radbtnBHistSimple.Name = "radbtnBHistSimple";
+            this.radbtnBHistSimple.Size = new System.Drawing.Size(134, 17);
+            this.radbtnBHistSimple.TabIndex = 13;
+            this.radbtnBHistSimple.TabStop = true;
+            this.radbtnBHistSimple.Text = "Simple (flat with log file)";
+            this.radbtnBHistSimple.UseVisualStyleBackColor = true;
+            // 
+            // radbtnBHistAdvanced
+            // 
+            this.radbtnBHistAdvanced.AutoSize = true;
+            this.radbtnBHistAdvanced.Location = new System.Drawing.Point(6, 42);
+            this.radbtnBHistAdvanced.Name = "radbtnBHistAdvanced";
+            this.radbtnBHistAdvanced.Size = new System.Drawing.Size(220, 17);
+            this.radbtnBHistAdvanced.TabIndex = 14;
+            this.radbtnBHistAdvanced.Text = "Advanced (Subdirectories without log file)";
+            this.radbtnBHistAdvanced.UseVisualStyleBackColor = true;
+            this.radbtnBHistAdvanced.CheckedChanged += new System.EventHandler(this.radbtnBHistAdvanced_CheckedChanged);
             // 
             // tabTriggers
             // 
@@ -331,38 +407,29 @@
             this.chkBackupSaved.Text = "Backup when database is saved.";
             this.chkBackupSaved.UseVisualStyleBackColor = true;
             // 
-            // radbtnBHistSimple
+            // chkAutoDelSubDirs
             // 
-            this.radbtnBHistSimple.AutoSize = true;
-            this.radbtnBHistSimple.Checked = true;
-            this.radbtnBHistSimple.Location = new System.Drawing.Point(6, 19);
-            this.radbtnBHistSimple.Name = "radbtnBHistSimple";
-            this.radbtnBHistSimple.Size = new System.Drawing.Size(134, 17);
-            this.radbtnBHistSimple.TabIndex = 13;
-            this.radbtnBHistSimple.TabStop = true;
-            this.radbtnBHistSimple.Text = "Simple (flat with log file)";
-            this.radbtnBHistSimple.UseVisualStyleBackColor = true;
+            this.chkAutoDelSubDirs.AutoSize = true;
+            this.chkAutoDelSubDirs.Enabled = false;
+            this.chkAutoDelSubDirs.Location = new System.Drawing.Point(277, 42);
+            this.chkAutoDelSubDirs.Name = "chkAutoDelSubDirs";
+            this.chkAutoDelSubDirs.Size = new System.Drawing.Size(219, 17);
+            this.chkAutoDelSubDirs.TabIndex = 15;
+            this.chkAutoDelSubDirs.Text = "Automatically delete empty subdirectories";
+            this.chkAutoDelSubDirs.UseVisualStyleBackColor = true;
             // 
-            // radbtnBHistAdvanced
+            // chkAlwaysFillSubDirs
             // 
-            this.radbtnBHistAdvanced.AutoSize = true;
-            this.radbtnBHistAdvanced.Location = new System.Drawing.Point(6, 42);
-            this.radbtnBHistAdvanced.Name = "radbtnBHistAdvanced";
-            this.radbtnBHistAdvanced.Size = new System.Drawing.Size(220, 17);
-            this.radbtnBHistAdvanced.TabIndex = 14;
-            this.radbtnBHistAdvanced.Text = "Advanced (Subdirectories without log file)";
-            this.radbtnBHistAdvanced.UseVisualStyleBackColor = true;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.radbtnBHistSimple);
-            this.groupBox1.Controls.Add(this.radbtnBHistAdvanced);
-            this.groupBox1.Location = new System.Drawing.Point(9, 70);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(499, 71);
-            this.groupBox1.TabIndex = 15;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Type of Backup History";
+            this.chkAlwaysFillSubDirs.AutoSize = true;
+            this.chkAlwaysFillSubDirs.Checked = true;
+            this.chkAlwaysFillSubDirs.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkAlwaysFillSubDirs.Enabled = false;
+            this.chkAlwaysFillSubDirs.Location = new System.Drawing.Point(277, 19);
+            this.chkAlwaysFillSubDirs.Name = "chkAlwaysFillSubDirs";
+            this.chkAlwaysFillSubDirs.Size = new System.Drawing.Size(173, 17);
+            this.chkAlwaysFillSubDirs.TabIndex = 16;
+            this.chkAlwaysFillSubDirs.Text = "Copy always into subdirectories";
+            this.chkAlwaysFillSubDirs.UseVisualStyleBackColor = true;
             // 
             // ConfigDialog
             // 
@@ -388,10 +455,12 @@
             this.tabDirectories.PerformLayout();
             this.tabGeneral.ResumeLayout(false);
             this.tabGeneral.PerformLayout();
-            this.tabTriggers.ResumeLayout(false);
-            this.tabTriggers.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.tabTriggers.ResumeLayout(false);
+            this.tabTriggers.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -425,5 +494,10 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton radbtnBHistSimple;
         private System.Windows.Forms.RadioButton radbtnBHistAdvanced;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.RadioButton radbtnDBSepSubDirs;
+        private System.Windows.Forms.RadioButton radbtnDBSepFlat;
+        private System.Windows.Forms.CheckBox chkAutoDelSubDirs;
+        private System.Windows.Forms.CheckBox chkAlwaysFillSubDirs;
     }
 }

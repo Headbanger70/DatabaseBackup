@@ -56,6 +56,12 @@ namespace DatabaseBackup.UI
             txtDateFormat.Text = Properties.Settings.Default.DateFormat;
             radbtnBHistSimple.Checked = Properties.Settings.Default.SimpleBackupHistory;
             radbtnBHistAdvanced.Checked = !Properties.Settings.Default.SimpleBackupHistory;
+            chkAutoDelSubDirs.Checked = Properties.Settings.Default.AutoDelSubDirs;
+            chkAutoDelSubDirs.Enabled = !Properties.Settings.Default.SimpleBackupHistory;
+            chkAlwaysFillSubDirs.Checked = Properties.Settings.Default.AlwaysFillSubDirs;
+            chkAlwaysFillSubDirs.Enabled = !Properties.Settings.Default.SimpleBackupHistory;
+            radbtnDBSepFlat.Checked = Properties.Settings.Default.DBSepUseOnlyOneDir;
+            radbtnDBSepSubDirs.Checked = !Properties.Settings.Default.DBSepUseOnlyOneDir;
 
             chkBackupClosed.Checked = Properties.Settings.Default.BackupOnFileClosed;
             chkBackupSaved.Checked = Properties.Settings.Default.BackupOnFileSaved;
@@ -203,6 +209,9 @@ namespace DatabaseBackup.UI
 
             Properties.Settings.Default.DateFormat = txtDateFormat.Text;
             Properties.Settings.Default.SimpleBackupHistory = radbtnBHistSimple.Checked;
+            Properties.Settings.Default.AutoDelSubDirs = chkAutoDelSubDirs.Checked;
+            Properties.Settings.Default.AlwaysFillSubDirs = chkAlwaysFillSubDirs.Checked;
+            Properties.Settings.Default.DBSepUseOnlyOneDir = radbtnDBSepFlat.Checked;
 
             Properties.Settings.Default.BackupOnFileClosed = chkBackupClosed.Checked;
             Properties.Settings.Default.BackupOnFileSaved = chkBackupSaved.Checked;
@@ -224,6 +233,14 @@ namespace DatabaseBackup.UI
         private void btnHelpDateFormat_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx");
+        }
+
+        /// <summary>
+        /// Handler for the Advanced Backup History radio box (used for graying out the check box)
+        /// </summary>
+        private void radbtnBHistAdvanced_CheckedChanged(object sender, EventArgs e) {
+            chkAutoDelSubDirs.Enabled = radbtnBHistAdvanced.Checked;
+            chkAlwaysFillSubDirs.Enabled = radbtnBHistAdvanced.Checked;
         }
     }
 }
