@@ -45,6 +45,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	<StartAction>Program</StartAction>
+    <StartProgram>C:\work\Visual Studio Projects\DatabaseBackup\DatabaseBackup\bin\KeePass.exe</StartProgram> 
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
