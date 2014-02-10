@@ -302,10 +302,9 @@ namespace DatabaseBackup
             // corresponding subfolder
             for (int dir = DirTypes.Std; dir <= DirTypes.TenYears; dir++) {
                 string sourceDir = Path.Combine(BackupFolder, DirNames[dir]);
+                string destDir = Path.Combine(BackupFolder, DirNames[dir + 1]);
 
                 if (Directory.Exists(sourceDir)) {
-                    string destDir = Path.Combine(BackupFolder, DirNames[dir + 1]);
-
                     // get only files with a matching name
                     string[] files = Directory.GetFiles(sourceDir, SourceFileName + "_*");
 
@@ -353,19 +352,26 @@ namespace DatabaseBackup
                             }
                         }
                     }
+                }
 
+                if (Directory.Exists(sourceDir)) {
                     // 2nd round: (re)move files if there are too many
 
                     // get only files with a matching name
-                    files = Directory.GetFiles(sourceDir, SourceFileName + "_*");
+                    string[] files = Directory.GetFiles(sourceDir, SourceFileName + "_*");
 
                     if (files.Length > 0) {
                         if (dir == DirTypes.Std && Properties.Settings.Default.AlwaysFillSubDirs) {
                             // Copy all files into the "1_Today" directory
+                            Directory.CreateDirectory(destDir);
                             foreach (string file in files) {
                                 string destFile = Path.Combine(destDir, Path.GetFileName(file));
                                 if (File.Exists(file) && !File.Exists(destFile)){
                                     File.Copy(file, destFile);
+                                    // Also set the file dates exactly like the original
+                                    File.SetCreationTime(destFile, File.GetCreationTime(file));
+                                    File.SetLastAccessTime(destFile, File.GetLastAccessTime(file));
+                                    File.SetLastWriteTime(destFile, File.GetLastWriteTime(file));
                                 }
                             }
                         } else {
