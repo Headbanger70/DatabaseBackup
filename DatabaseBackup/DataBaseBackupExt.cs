@@ -374,77 +374,76 @@ namespace DatabaseBackup
                                     File.SetLastWriteTime(destFile, File.GetLastWriteTime(file));
                                 }
                             }
-                        } else {
-                            // sort them by date/time (ascending, i.e. from the oldest to the newest)
-                            Array.Sort(files, CompareFilesByCreationDate);
+                        }
 
-                            // For ".", "1_Today" and "2_Yesterday" the maximum number of files is
-                            // limited by the preferences (HistoQty)
-                            if (dir <= DirTypes.Yesterday &&
-                                files.Length > Properties.Settings.Default.BackupCount) {
+                        // sort them by date/time (ascending, i.e. from the oldest to the newest)
+                        Array.Sort(files, CompareFilesByCreationDate);
 
-                                // Delete/Move from the beginning:
-                                //   ".": Delete the oldest files
-                                //   "1_Today" and "2_Yesterday":
-                                //        Keep the old files and delete/move the youngest
-                                if (dir != DirTypes.Std) Array.Reverse(files);
+                        // For ".", "1_Today" and "2_Yesterday" the maximum number of files is
+                        // limited by the preferences (HistoQty)
+                        if (dir <= DirTypes.Yesterday &&
+                            files.Length > Properties.Settings.Default.BackupCount) {
 
-                                // Delete/Move as many files such that the maximum number of files (HistoQty) remains
-                                for (int i = 0; i < files.Length - Properties.Settings.Default.BackupCount; i++) {
-                                    if (File.Exists(files[i])) {
+                            // Delete/Move from the beginning:
+                            //   ".": Delete the oldest files
+                            //   "1_Today" and "2_Yesterday":
+                            //        Keep the old files and delete/move the youngest
+                            if (dir != DirTypes.Std) Array.Reverse(files);
 
-                                        // Check the files in the "Today" directory that should be removed, whether they
-                                        // are old enough to belong into the "Yesterday" directory. If so, move them.
-                                        // Otherwise, delete them.
-                                        // The files in the standard and "Yesterday" directory can be moved in all cases.
-                                        if ((dir != DirTypes.Today) ||
-                                            (DateTime.Compare((new FileInfo(files[i])).CreationTime, DateTime.Today) < 0)) {
-                                            Directory.CreateDirectory(destDir);
+                            // Delete/Move as many files such that the maximum number of files (HistoQty) remains
+                            for (int i = 0; i < files.Length - Properties.Settings.Default.BackupCount; i++) {
+                                if (File.Exists(files[i])) {
 
-                                            // File.Move(files[i],
-                                            //    Path.Combine(destDir, Path.GetFileName(files[i])));
-                                            MoveBackupFile(Path.GetFileName(files[i]), BackupFolder,
-                                                DirNames[dir], DirNames[dir + 1]);
-                                        } else {
-                                            // if the file is too young, delete it
-                                            File.Delete(files[i]);
-                                        }
+                                    // Check the files in the "Today" directory that should be removed, whether they
+                                    // are old enough to belong into the "Yesterday" directory. If so, move them.
+                                    // Otherwise, delete them.
+                                    // The files in the standard and "Yesterday" directory can be moved in all cases.
+                                    if ((dir != DirTypes.Today) ||
+                                        (DateTime.Compare((new FileInfo(files[i])).CreationTime, DateTime.Today) < 0)) {
+                                        Directory.CreateDirectory(destDir);
+
+                                        // File.Move(files[i],
+                                        //    Path.Combine(destDir, Path.GetFileName(files[i])));
+                                        MoveBackupFile(Path.GetFileName(files[i]), BackupFolder,
+                                            DirNames[dir], DirNames[dir + 1]);
+                                    } else {
+                                        // if the file is too young, delete it
+                                        File.Delete(files[i]);
                                     }
                                 }
-                            } else if (dir >= DirTypes.OneWeek) {
-                                // For the remaining directories we use a heuristic method, e.g.:
-                                // "3_One_Week": At most one file per day
-                                // "4_Four_Weeks": At most one file per 7 days
-                                // "5_Twelve_Month": At most one file per month
-                                // "6_Ten_Years": At most one file per year
-
-                                bool first = true;
-                                bound = DateTime.Today; // this is just for compile reasons...
-                                foreach (string file in files) {
-                                    if (File.Exists(file)) {
-                                        if (!first) {
-                                            if (DateTime.Compare((new FileInfo(file)).CreationTime, bound) < 0) {
-                                                File.Delete(file);
-                                                continue;
-                                            }
-                                        } else {
-                                            first = false;
+                            }
+                        } else if (dir >= DirTypes.OneWeek) {
+                            // For the remaining directories we use a heuristic method, e.g.:
+                            // "3_One_Week": At most one file per day
+                            // "4_Four_Weeks": At most one file per 7 days
+                            // "5_Twelve_Month": At most one file per month
+                            // "6_Ten_Years": At most one file per year
+                            bool first = true;
+                            bound = DateTime.Today; // this is just for compile reasons...
+                            foreach (string file in files) {
+                                if (File.Exists(file)) {
+                                    if (!first) {
+                                        if (DateTime.Compare((new FileInfo(file)).CreationTime, bound) < 0) {
+                                            File.Delete(file);
+                                            continue;
                                         }
-                                        bound = (new FileInfo(file)).CreationTime;
-                                        switch (dir) {
-                                            case DirTypes.OneWeek:
-                                                bound = new DateTime(bound.Year, bound.Month, bound.Day).AddDays(1);
-                                                break;
-                                            case DirTypes.FourWeeks:
-                                                bound = new DateTime(bound.Year, bound.Month, bound.Day).AddDays(7);
-                                                break;
-                                            case DirTypes.TwelveMonths:
-                                                bound = new DateTime(bound.Year, bound.Month, 1).AddMonths(1);
-                                                break;
-                                            case DirTypes.TenYears:
-                                                bound = new DateTime(bound.Year + 1, 1, 1);
-                                                break;
-                                        }
+                                    } else {
+                                        first = false;
+                                    }
+                                    bound = (new FileInfo(file)).CreationTime;
+                                    switch (dir) {
+                                        case DirTypes.OneWeek:
+                                            bound = new DateTime(bound.Year, bound.Month, bound.Day).AddDays(1);
+                                            break;
+                                        case DirTypes.FourWeeks:
+                                            bound = new DateTime(bound.Year, bound.Month, bound.Day).AddDays(7);
+                                            break;
+                                        case DirTypes.TwelveMonths:
+                                            bound = new DateTime(bound.Year, bound.Month, 1).AddMonths(1);
+                                            break;
+                                        case DirTypes.TenYears:
+                                            bound = new DateTime(bound.Year + 1, 1, 1);
+                                            break;
                                     }
                                 }
                             }
